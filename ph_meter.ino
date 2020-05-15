@@ -1,7 +1,8 @@
 #include <SPI.h>
 #include <WiFiNINA.h>
 #include <PubSubClient.h>
-#include "arduino_secrets.h" 
+
+#include "secrets.h" 
 
 char ssid[] = SECRET_SSID;        // your network SSID (name)
 char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
