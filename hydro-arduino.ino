@@ -5,14 +5,18 @@
 #include <DallasTemperature.h>
 #include "DFRobot_PH.h"
 #include <EEPROM.h>
+#include <Adafruit_NeoPixel.h>
 
+#include "pixels.h"     
 #include "secrets.h" 
 
-char ssid[] = SECRET_SSID;        // your network SSID (name)
-char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
 
 #define PH_PIN A1
 #define ONE_WIRE_BUS 2
+#define DIODE_PIN 4
+#define DIODES_COUNT 16
 
 DFRobot_PH ph;
 
@@ -21,6 +25,9 @@ DallasTemperature waterTemperatureSensors(&oneWire);
 
 WiFiClient wifiClient;
 PubSubClient pubsubClient("192.168.8.23", 1883, wifiClient);
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(DIODES_COUNT, DIODE_PIN, NEO_GRB + NEO_KHZ800);
+
 int wifiStatus = WL_IDLE_STATUS;
 
 void setupSerial() {
@@ -72,12 +79,17 @@ void setupPubsubIfNeeded() {
   }
 }
 
+void setupPixels() {
+  pixels.begin(); 
+}
+
 void setup() {
   setupSerial();
   setupWaterTemperatureSensors();
 
   setupWifi();
   setupPubsub();
+  setupPixels();
 }
 
 void phMeterLoop()
@@ -99,6 +111,8 @@ void phMeterLoop()
       Serial.println(temperature);
       
       reportPhWithTemperature(phValue, temperature);
+      updatePhPixels(&pixels, phValue);
+      updateTemperaturePixels(&pixels, temperature);
     }
     
     
@@ -134,4 +148,5 @@ void loop() {
   setupPubsubIfNeeded();
   
   phMeterLoop();
+  pixels.show();
 }
